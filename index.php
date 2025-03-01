@@ -1,16 +1,16 @@
 <?php
 /**
  * Plugin Name: Custom Post API
- * Description: Custom REST API endpoint
- * Version: 1.3.0
+ * Description: Custom REST API endpoint for posts.
+ * Version: 1.4.0
  * Author: Satyam Regmi
  */
 
 if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
+    exit; 
 }
 
-// Register Custom REST API Endpoint
+// Custom REST API Endpoint
 function cpa_register_api_routes() {
     register_rest_route('custom-api/v1', '/posts/', array(
         'methods'  => 'GET',
@@ -47,16 +47,16 @@ function cpa_get_posts($request) {
         ]);
     }
 
-    $count = isset($params['count']) ? intval($params['count']) : 5;
+    $limit = isset($params['limit']) ? intval($params['limit']) : 5;
     $category = isset($params['category']) ? sanitize_text_field($params['category']) : '';
-    $tag = isset($params['tag']) ? sanitize_text_field($params['tag']) : '';
+    $tags = isset($params['tags']) ? sanitize_text_field($params['tags']) : '';
     $author = isset($params['author']) ? intval($params['author']) : '';
 
     $args = [
         'post_type'      => 'post',
-        'posts_per_page' => $count,
+        'posts_per_page' => $limit,
         'category_name'  => $category,
-        'tag'           => $tag,
+        'tag'           => $tags,
         'author'         => $author
     ];
     
