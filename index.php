@@ -10,6 +10,14 @@ if (!defined('ABSPATH')) {
     exit; 
 }
 
+// Allow CORS for all origins
+function cpa_allow_cors_headers() {
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
+}
+add_action('init', 'cpa_allow_cors_headers');
+
 // Custom REST API Endpoint
 function cpa_register_api_routes() {
     register_rest_route('custom-api/v1', '/posts/', array(
