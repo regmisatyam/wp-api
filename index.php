@@ -1,16 +1,16 @@
 <?php
 /**
  * Plugin Name: Custom Post API
- * Description: Custom REST API endpoint for fetching posts.
- * Version: 1.0.0
+ * Description: Custom REST API endpoint
+ * Version: 1.3.0
  * Author: Satyam Regmi
  */
 
 if (!defined('ABSPATH')) {
-    exit; 
+    exit; // Exit if accessed directly
 }
 
-// Custom REST API Endpoint
+// Register Custom REST API Endpoint
 function cpa_register_api_routes() {
     register_rest_route('custom-api/v1', '/posts/', array(
         'methods'  => 'GET',
@@ -23,14 +23,40 @@ add_action('rest_api_init', 'cpa_register_api_routes');
 // Callback Function for Fetching Posts
 function cpa_get_posts($request) {
     $params = $request->get_params();
+    
+    if (isset($params['id'])) {
+        $post_id = intval($params['id']);
+        $post = get_post($post_id);
+    } elseif (isset($params['slug'])) {
+        $post = get_page_by_path(sanitize_text_field($params['slug']), OBJECT, 'post');
+    }
+
+    if (!empty($post)) {
+        return rest_ensure_response([
+            'id'       => $post->ID,
+            'title'    => get_the_title($post),
+            'content'  => apply_filters('the_content', $post->post_content),
+            'excerpt'  => get_the_excerpt($post),
+            'author'   => get_the_author_meta('display_name', $post->post_author),
+            'date'     => get_the_date('Y-m-d H:i:s', $post),
+            'categories' => wp_get_post_categories($post->ID, ['fields' => 'names']),
+            'tags'     => wp_get_post_tags($post->ID, ['fields' => 'names']),
+            'meta'     => get_post_meta($post->ID, '_cpe_custom_field', true),
+            'image'    => get_the_post_thumbnail_url($post->ID, 'full') ?: '',
+            'link'     => get_permalink($post->ID)
+        ]);
+    }
+
     $count = isset($params['count']) ? intval($params['count']) : 5;
     $category = isset($params['category']) ? sanitize_text_field($params['category']) : '';
+    $tag = isset($params['tag']) ? sanitize_text_field($params['tag']) : '';
     $author = isset($params['author']) ? intval($params['author']) : '';
 
     $args = [
         'post_type'      => 'post',
         'posts_per_page' => $count,
         'category_name'  => $category,
+        'tag'           => $tag,
         'author'         => $author
     ];
     
@@ -48,6 +74,8 @@ function cpa_get_posts($request) {
                 'excerpt'  => get_the_excerpt(),
                 'author'   => get_the_author(),
                 'date'     => get_the_date('Y-m-d H:i:s'),
+                'categories' => wp_get_post_categories(get_the_ID(), ['fields' => 'names']),
+                'tags'     => wp_get_post_tags(get_the_ID(), ['fields' => 'names']),
                 'meta'     => get_post_meta(get_the_ID(), '_cpe_custom_field', true),
                 'image'    => $image_url ? $image_url : '',
                 'link'     => get_permalink()
