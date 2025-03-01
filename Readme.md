@@ -3,9 +3,9 @@
 2. Create index.php file and copy & paste the code.
 
 ### Now goto Wordpress dashboard (yourwebsite.com/wp-login.php)
->> GOTO Plugins
->> Cheeck for Custom Post API
->> Click Activate
+1. GOTO Plugins
+2. Cheeck for Custom Post API
+3. Click Activate
 
 ### Base URL of API
 ```file copy
